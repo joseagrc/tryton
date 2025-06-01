@@ -376,6 +376,7 @@ img.icon {
             }
         }
         > thead > tr > th {
+            position: relative;
             > label.sortable {
                 cursor: pointer;
             }
@@ -390,6 +391,15 @@ img.icon {
             &.timedelta, &.float, &.numeric, &.integer, &.biginteger {
                 text-align: right;
                 text-align: end;
+            }
+            .resize-handle {
+                position: absolute;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                width: 5px;
+                min-width: 5px;
+                cursor: col-resize;
             }
         }
         > thead > tr:first-child th {
