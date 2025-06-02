@@ -796,6 +796,14 @@
 
     Sao.Screen = Sao.class_(Object, {
         init: function(model_name, attributes) {
+            if (!Sao.Screen.tree_column_width) {
+                Sao.Screen.tree_column_width = {};
+            }
+            if (!Sao.Screen.tree_column_width[model_name]) {
+                Sao.Screen.tree_column_width[model_name] = {};
+            }
+            this.tree_column_width = Sao.Screen.tree_column_width;
+
             this.model_name = model_name;
             this.model = new Sao.Model(model_name, attributes);
             this.attributes = jQuery.extend({}, attributes);
@@ -898,7 +906,8 @@
                 view = this.views_preload[view_type];
             } else {
                 var prm = this.model.execute('fields_view_get',
-                        [view_id, view_type], this.context);
+                        [view_id, view_type],
+                        jQuery.extend({}, this.context, {view_tree_width: true}));
                 return prm.pipe(this.add_view.bind(this));
             }
             this.add_view(view);
@@ -1756,7 +1765,7 @@
             }
             if (!(view_id in this.fields_view_tree)) {
                 view_tree = this.model.execute('fields_view_get', [false, 'tree'],
-                    this.context, false);
+                    jQuery.extend({}, this.context, {view_tree_width: true}), false);
                 this.fields_view_tree[view_id] = view_tree;
             } else {
                 view_tree = this.fields_view_tree[view_id];

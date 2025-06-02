@@ -233,7 +233,42 @@
                     th.click(column, this.sort_model.bind(this));
                     label.addClass('sortable');
                 }
-                tr.append(th.append(label));
+                var handle = jQuery('<span/>', {
+                    'class': 'resize-handle',
+                });
+                th.append(label).append(handle);
+                var stored = this.screen.tree_column_width[this.screen.model_name][column.attributes.name];
+                if (column.attributes.width) {
+                    this.screen.tree_column_width[this.screen.model_name][column.attributes.name] = parseInt(column.attributes.width, 10);
+                }
+                if (stored) {
+                    column.attributes.width = stored;
+                }
+                handle.on('mousedown', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var startX = e.pageX;
+                    var startWidth = column.col.width();
+                    var mousemove = function(ev) {
+                        var w = Math.max(5, startWidth + ev.pageX - startX);
+                        column.col.css('width', w);
+                    };
+                    var tree = this;
+                    var mouseup = function() {
+                        jQuery(document).off('mousemove.treeResize', mousemove);
+                        jQuery(document).off('mouseup.treeResize', mouseup);
+                        var width = parseInt(column.col.width(), 10);
+                        var fields = {};
+                        fields[column.attributes.name] = width;
+                        new Sao.Model('ir.ui.view_tree_width').execute('set_width', [tree.screen.model_name, fields], tree.screen.context);
+                        tree.screen.tree_column_width[tree.screen.model_name][column.attributes.name] = width;
+                        column.attributes.width = width;
+                    };
+                    jQuery(document).on('mousemove.treeResize', mousemove);
+                    jQuery(document).on('mouseup.treeResize', mouseup);
+                }.bind(this));
+
+                tr.append(th);
                 column.header = th;
                 column.col = col;
 
@@ -695,7 +730,11 @@
                     !column.col.hasClass('selection-state') &&
                     !column.col.hasClass('favorite')) {
                     var width, c_width;
-                    if (column.attributes.width) {
+                    var stored = this.screen.tree_column_width[this.screen.model_name][column.attributes.name];
+                    if (stored) {
+                        width = c_width = stored;
+                        min_width.push(width + 'px');
+                    } else if (column.attributes.width) {
                         width = c_width = column.attributes.width;
                         min_width.push(width + 'px');
                     } else {
